@@ -1,4 +1,4 @@
-name: Tests
+name: Linked list
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  linked-list-tests:
+  tests:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
