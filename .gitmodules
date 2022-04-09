@@ -1,0 +1,3 @@
+[submodule "go-syn-ack-scanner"]
+	path = go-syn-ack-scanner
+	url = https://github.com/coozieki/go-syn-ack-scanner
