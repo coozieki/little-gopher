@@ -23,25 +23,7 @@ jobs:
           cd linked-list
           go mod verify
 
-      - name: Build
-        run: | 
-          cd linked-list
-          go build -v ./...
-
-      - name: Run go vet
-        run: go vet ./...
-
-      - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: Run staticcheck
-        run: staticcheck ./...
-
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
-
-      - name: Run golint
-        run: golint ./...
-
       - name: Run tests
-        run: go test -race -vet=off ./...
+        run: |
+          cd linked-list
+          go test -race -vet=off ./...
