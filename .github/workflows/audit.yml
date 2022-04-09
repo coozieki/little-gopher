@@ -2,10 +2,12 @@ name: Audit
 
 on:
   push:
-    branches: [master]
+    branches:
+      - '**'
   pull_request:
-    branches: [master]
-
+    branches:
+      - '**'
+]
 jobs:
 
   linked-list-tests:
