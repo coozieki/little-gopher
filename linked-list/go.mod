@@ -1,4 +1,4 @@
-module linked-list
+module github.com/coozieki/little-gopher/linked-list
 
 go 1.18
 
