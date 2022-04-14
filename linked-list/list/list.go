@@ -2,12 +2,12 @@ package list
 
 import "errors"
 
-type node[T comparable] struct {
+type node[T any] struct {
 	val  T
 	next *node[T]
 }
 
-func FromArray[T comparable](arr []T) *node[T] {
+func FromArray[T any](arr []T) *node[T] {
 	firstNode := new(node[T])
 	currentNode := firstNode
 	for index, el := range arr {
@@ -29,20 +29,6 @@ func (n *node[T]) At(index int) (T, error) {
 		currentNode = currentNode.next
 	}
 	return currentNode.val, nil
-}
-
-func (n *node[T]) Search(val T) int {
-	i := 0
-	currentNode := n
-	for currentNode.val != val {
-		if currentNode.next == nil {
-			return -1
-		}
-		currentNode = currentNode.next
-		i++
-	}
-
-	return i
 }
 
 func (n *node[T]) AsArray() []T {

@@ -37,29 +37,6 @@ func TestAtWhenDoesntExist(t *testing.T) {
 	assert.Error(t, err, "element not found")
 }
 
-func TestSearch(t *testing.T) {
-	tests := []struct {
-		name           string
-		array          []int
-		search         int
-		expectedResult int
-	}{
-		{name: "with several nodes and first index", array: []int{3, 5, 7, 2}, search: 3, expectedResult: 0},
-		{name: "with several nodes and last index", array: []int{3, 5, 7, 2}, search: 2, expectedResult: 3},
-		{name: "with several nodes and other index", array: []int{3, 5, 7, 2}, search: 5, expectedResult: 1},
-		{name: "with one node", array: []int{4}, search: 4, expectedResult: 0},
-		{name: "with equal elements", array: []int{1, 2, 2, 3}, search: 2, expectedResult: 1},
-		{name: "when not found", array: []int{1, 2}, search: 3, expectedResult: -1},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			l := list.FromArray(test.array)
-			assert.Equal(t, test.expectedResult, l.Search(test.search))
-		})
-	}
-}
-
 func TestAsArray(t *testing.T) {
 	arr := []int{1, 3, 5, 2}
 	l := list.FromArray(arr)
