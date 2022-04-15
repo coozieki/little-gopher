@@ -1,9 +1,16 @@
 package snake
 
+import (
+	"go-snake/internal/config"
+)
+
 type Snake interface {
-	Move(dir Direction)
+	Move()
 	PushBlock()
 	GetBlocks() []Block
+	ChangeDir(direction Direction)
+	GetNextHeadCoords() (x, y float64)
+	BlockExistsAt(x, y float64) bool
 }
 
 type snake struct {
@@ -50,35 +57,13 @@ func (s *snake) GetBlocks() []Block {
 	return s.blocks
 }
 
-func (s *snake) Move(dir Direction) {
+func (s *snake) Move() {
 	temp := s.blocks[len(s.blocks)-1]
-	temp.Direction = dir
-	switch dir {
-	case DirectionRight:
-		if s.currentDir == DirectionLeft {
-			return
-		}
-		temp.X++
-	case DirectionDown:
-		if s.currentDir == DirectionUp {
-			return
-		}
-		temp.Y++
-	case DirectionLeft:
-		if s.currentDir == DirectionRight {
-			return
-		}
-		temp.X--
-	case DirectionUp:
-		if s.currentDir == DirectionDown {
-			return
-		}
-		temp.Y--
-	}
-	if s.blocksMap[temp.X][temp.Y] {
+	temp.Direction = s.currentDir
+	temp.X, temp.Y = s.GetNextHeadCoords()
+	if s.BlockExistsAt(temp.X, temp.Y) {
 		return
 	}
-	s.currentDir = dir
 	firstBlock := s.blocks[0]
 	s.blocksMap[firstBlock.X][firstBlock.Y] = false
 	s.blocks = s.blocks[1:]
@@ -88,4 +73,57 @@ func (s *snake) Move(dir Direction) {
 		s.blocksMap[temp.X] = map[float64]bool{}
 	}
 	s.blocksMap[temp.X][temp.Y] = true
+}
+
+func (s *snake) ChangeDir(direction Direction) {
+	switch direction {
+	case DirectionRight:
+		if s.currentDir == DirectionLeft {
+			return
+		}
+	case DirectionDown:
+		if s.currentDir == DirectionUp {
+			return
+		}
+	case DirectionLeft:
+		if s.currentDir == DirectionRight {
+			return
+		}
+	case DirectionUp:
+		if s.currentDir == DirectionDown {
+			return
+		}
+	}
+	s.currentDir = direction
+}
+
+func (s *snake) GetNextHeadCoords() (x float64, y float64) {
+	block := s.blocks[len(s.blocks)-1]
+	switch s.currentDir {
+	case DirectionRight:
+		block.X++
+		if block.X > config.FieldWidthInBlocks-1 {
+			block.X = 0
+		}
+	case DirectionDown:
+		block.Y++
+		if block.Y > config.FieldWidthInBlocks-1 {
+			block.Y = 0
+		}
+	case DirectionLeft:
+		block.X--
+		if block.X < 0 {
+			block.X = config.FieldWidthInBlocks - 1
+		}
+	case DirectionUp:
+		block.Y--
+		if block.Y < 0 {
+			block.Y = config.FieldWidthInBlocks - 1
+		}
+	}
+	return block.X, block.Y
+}
+
+func (s *snake) BlockExistsAt(x, y float64) bool {
+	return s.blocksMap[x][y]
 }
