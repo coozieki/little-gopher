@@ -139,7 +139,7 @@ func (g *game) Update() error {
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *game) Draw(screen *ebiten.Image) {
 	g.frames++
-	if g.frames%drawFrameInterval == 0 {
+	if g.frames%drawFrameInterval != 0 {
 		return
 	}
 	var wg sync.WaitGroup
