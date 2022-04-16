@@ -20,12 +20,22 @@ type snake struct {
 }
 
 func NewSnake() *snake {
+	blocksMap := map[float64]map[float64]bool{}
+	for k, v := range config.Map {
+		blocksMap[k] = map[float64]bool{}
+		for k2, v2 := range v {
+			blocksMap[k][k2] = v2
+		}
+	}
+	_, ok := blocksMap[0]
+	if !ok {
+		blocksMap[0] = map[float64]bool{}
+	}
+	blocksMap[0][0] = true
 	return &snake{
 		blocks:     []Block{{X: 0, Y: 0, Direction: DirectionRight}},
 		currentDir: DirectionRight,
-		blocksMap: map[float64]map[float64]bool{
-			0: {0: true},
-		},
+		blocksMap:  blocksMap,
 	}
 }
 

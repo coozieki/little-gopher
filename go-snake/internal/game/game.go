@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-snake/internal/config"
@@ -13,9 +14,9 @@ import (
 )
 
 const (
-	maxDirQueueSize   = 3
-	drawFrameInterval = 4
-	framesForMove     = drawFrameInterval * 3
+	maxDirQueueSize      = 3
+	drawIntervalInFrames = 4
+	moveIntervalInFrames = drawIntervalInFrames * 1
 )
 
 type fruit struct {
@@ -23,7 +24,19 @@ type fruit struct {
 	Y float64
 }
 
-// Game implements ebiten.Game interface.
+type images struct {
+	fruitImage    *ebiten.Image
+	blockImage    *ebiten.Image
+	headImage     *ebiten.Image
+	obstacleImage *ebiten.Image
+}
+
+type layers struct {
+	mainLayer  *ebiten.Image
+	snakeLayer *ebiten.Image
+	fruitLayer *ebiten.Image
+}
+
 type game struct {
 	snake snake.Snake
 	fruit fruit
@@ -33,14 +46,14 @@ type game struct {
 	dirQueue           []snake.Direction
 	mu                 sync.Mutex
 
-	fruitImage *ebiten.Image
-	blockImage *ebiten.Image
-	headImage  *ebiten.Image
+	images images
+	layers layers
 }
 
 func NewGame(s snake.Snake) *game {
 	g := &game{snake: s, fruit: fruit{}}
 	g.initImages()
+	g.initLayers()
 	g.moveFruit()
 	return g
 }
@@ -53,6 +66,14 @@ func (g *game) initImages() {
 	fruit := ebiten.NewImage(config.BlockWidth+1, config.BlockWidth+1)
 	fruit.Fill(colornames.Black)
 	fruit.DrawImage(fruitInner, &ebiten.DrawImageOptions{GeoM: geoM})
+
+	obstacleInner := ebiten.NewImage(config.BlockWidth-1, config.BlockWidth-1)
+	obstacleInner.Fill(colornames.Red)
+	geoM = ebiten.GeoM{}
+	geoM.Translate(1, 1)
+	obstacle := ebiten.NewImage(config.BlockWidth+1, config.BlockWidth+1)
+	obstacle.Fill(colornames.Black)
+	obstacle.DrawImage(obstacleInner, &ebiten.DrawImageOptions{GeoM: geoM})
 
 	headInner := ebiten.NewImage(config.BlockWidth-1, config.BlockWidth-1)
 	headInner.Fill(colornames.Green)
@@ -70,9 +91,37 @@ func (g *game) initImages() {
 	head.DrawImage(headInner, &ebiten.DrawImageOptions{GeoM: geoM})
 	block.DrawImage(blockInner, &ebiten.DrawImageOptions{GeoM: geoM})
 
-	g.fruitImage = fruit
-	g.headImage = head
-	g.blockImage = block
+	g.images = images{
+		fruitImage:    fruit,
+		headImage:     head,
+		blockImage:    block,
+		obstacleImage: obstacle,
+	}
+}
+
+func (g *game) initLayers() {
+	var wg sync.WaitGroup
+
+	mainLayer := ebiten.NewImage(g.Layout(1, 1))
+	fruitLayer := ebiten.NewImage(g.Layout(1, 1))
+	snakeLayer := ebiten.NewImage(g.Layout(1, 1))
+
+	for x, v := range config.Map {
+		for y := range v {
+			wg.Add(1)
+			y := y
+			x := x
+
+			go func() {
+				defer wg.Done()
+				g.drawObstacle(mainLayer, x, y)
+			}()
+		}
+	}
+
+	wg.Wait()
+
+	g.layers = layers{mainLayer: mainLayer, fruitLayer: fruitLayer, snakeLayer: snakeLayer}
 }
 
 func (g *game) moveFruit() {
@@ -85,10 +134,13 @@ func (g *game) moveFruit() {
 	}
 	g.fruit.X = newX
 	g.fruit.Y = newY
+
+	g.layers.fruitLayer.Clear()
+	geoM := ebiten.GeoM{}
+	geoM.Translate(g.fruit.X*float64(config.BlockWidth), g.fruit.Y*float64(config.BlockWidth))
+	g.layers.fruitLayer.DrawImage(g.images.fruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
 }
 
-// Update proceeds the game state.
-// Update is called every tick (1/60 [s] by default).
 func (g *game) Update() error {
 	go func() {
 		for _, key := range []ebiten.Key{ebiten.KeyS, ebiten.KeyD, ebiten.KeyW, ebiten.KeyA, ebiten.KeyF} {
@@ -115,7 +167,7 @@ func (g *game) Update() error {
 		}
 	}()
 	g.framesFromLastMove++
-	if g.framesFromLastMove > framesForMove {
+	if g.framesFromLastMove > moveIntervalInFrames {
 		if len(g.dirQueue) > 0 {
 			g.snake.ChangeDir(g.dirQueue[0])
 			g.mu.Lock()
@@ -135,18 +187,14 @@ func (g *game) Update() error {
 	return nil
 }
 
-// Draw draws the game screen.
-// Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *game) Draw(screen *ebiten.Image) {
 	g.frames++
-	if g.frames%drawFrameInterval != 0 {
-		return
-	}
 	var wg sync.WaitGroup
 
 	screen.Clear()
 	screen.Fill(colornames.Aquamarine)
 
+	g.layers.snakeLayer.Clear()
 	blocks := g.snake.GetBlocks()
 	for i, block := range blocks {
 		wg.Add(1)
@@ -154,20 +202,24 @@ func (g *game) Draw(screen *ebiten.Image) {
 		i := i
 		go func() {
 			defer wg.Done()
-			g.drawBlock(screen, block, i == len(blocks)-1)
+			g.drawBlock(g.layers.snakeLayer, block, i == len(blocks)-1)
 		}()
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Wait()
 
-		geoM := ebiten.GeoM{}
-		geoM.Translate(g.fruit.X*float64(config.BlockWidth), g.fruit.Y*float64(config.BlockWidth))
-		screen.DrawImage(g.fruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
-	}()
+	wg.Add(3)
+	for _, layer := range []*ebiten.Image{g.layers.mainLayer, g.layers.fruitLayer, g.layers.snakeLayer} {
+		layer := layer
+		go func() {
+			defer wg.Done()
+			screen.DrawImage(layer, &ebiten.DrawImageOptions{})
+		}()
+	}
 
 	wg.Wait()
+
+	fmt.Println(ebiten.CurrentFPS())
 }
 
 func (g *game) drawBlock(screen *ebiten.Image, block snake.Block, isHead bool) {
@@ -176,15 +228,21 @@ func (g *game) drawBlock(screen *ebiten.Image, block snake.Block, isHead bool) {
 
 	var img *ebiten.Image
 	if isHead {
-		img = g.headImage
+		img = g.images.headImage
 	} else {
-		img = g.blockImage
+		img = g.images.blockImage
 	}
 	screen.DrawImage(img, &ebiten.DrawImageOptions{GeoM: geoM})
 }
 
+func (g *game) drawObstacle(target *ebiten.Image, x, y float64) {
+	geoM := ebiten.GeoM{}
+	geoM.Translate(x*float64(config.BlockWidth), y*float64(config.BlockWidth))
+	target.DrawImage(g.images.obstacleImage, &ebiten.DrawImageOptions{GeoM: geoM})
+}
+
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
-func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+func (g *game) Layout(int, int) (screenWidth int, screenHeight int) {
 	return config.BlockWidth*config.FieldWidthInBlocks + 1, config.BlockWidth*config.FieldWidthInBlocks + 1
 }
