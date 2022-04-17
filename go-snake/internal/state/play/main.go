@@ -13,14 +13,14 @@ type playState struct {
 	dirQueue           []snake.Direction
 	mu                 sync.Mutex
 
-	MainGameLayer *ebiten.Image
-	SnakeLayer    *ebiten.Image
-	FruitLayer    *ebiten.Image
+	mainGameLayer *ebiten.Image
+	snakeLayer    *ebiten.Image
+	fruitLayer    *ebiten.Image
 
-	FruitImage    *ebiten.Image
-	ObstacleImage *ebiten.Image
-	HeadImage     *ebiten.Image
-	BlockImage    *ebiten.Image
+	fruitImage    *ebiten.Image
+	obstacleImage *ebiten.Image
+	headImage     *ebiten.Image
+	blockImage    *ebiten.Image
 
 	snake snake.Snake
 	fruit geom.Point

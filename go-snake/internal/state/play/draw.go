@@ -13,7 +13,7 @@ func (p *playState) Draw(screen *ebiten.Image, data *state.Data) {
 
 	screen.Fill(config.BGColor)
 
-	p.SnakeLayer.Clear()
+	p.snakeLayer.Clear()
 	blocks := p.snake.GetBlocks()
 	for i := 0; i < len(blocks); i++ {
 		block := blocks[i]
@@ -28,11 +28,11 @@ func (p *playState) Draw(screen *ebiten.Image, data *state.Data) {
 			block.Y += -1 + p.movementOffset
 		}
 		i := i
-		p.drawBlock(p.SnakeLayer, block, i == len(blocks)-1)
+		p.drawBlock(p.snakeLayer, block, i == len(blocks)-1)
 	}
 
 	wg.Add(3)
-	for _, layer := range []*ebiten.Image{p.MainGameLayer, p.FruitLayer, p.SnakeLayer} {
+	for _, layer := range []*ebiten.Image{p.mainGameLayer, p.fruitLayer, p.snakeLayer} {
 		layer := layer
 		go func() {
 			defer wg.Done()
@@ -49,9 +49,9 @@ func (p *playState) drawBlock(target *ebiten.Image, block snake.Block, isHead bo
 
 	var img *ebiten.Image
 	if isHead {
-		img = p.HeadImage
+		img = p.headImage
 	} else {
-		img = p.BlockImage
+		img = p.blockImage
 	}
 	target.DrawImage(img, &ebiten.DrawImageOptions{GeoM: geoM})
 }
@@ -59,11 +59,11 @@ func (p *playState) drawBlock(target *ebiten.Image, block snake.Block, isHead bo
 func (p *playState) drawFruit(target *ebiten.Image, x, y int) {
 	geoM := ebiten.GeoM{}
 	geoM.Translate(float64(x*config.BlockWidth), float64(y*config.BlockWidth))
-	target.DrawImage(p.FruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
+	target.DrawImage(p.fruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
 }
 
 func (p *playState) drawObstacle(target *ebiten.Image, x, y float64) {
 	geoM := ebiten.GeoM{}
 	geoM.Translate(x*float64(config.BlockWidth), y*float64(config.BlockWidth))
-	target.DrawImage(p.ObstacleImage, &ebiten.DrawImageOptions{GeoM: geoM})
+	target.DrawImage(p.obstacleImage, &ebiten.DrawImageOptions{GeoM: geoM})
 }

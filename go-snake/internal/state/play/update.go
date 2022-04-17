@@ -43,9 +43,9 @@ func (p *playState) Update(data *state.Data) {
 
 func (p *playState) GameOver() {
 	p.snake = snake.NewSnake()
-	p.SnakeLayer = nil
-	p.MainGameLayer = nil
-	p.FruitLayer = nil
+	p.snakeLayer = nil
+	p.mainGameLayer = nil
+	p.fruitLayer = nil
 	p.dirQueue = []snake.Direction{}
 	p.initLayers()
 	p.moveFruit()
@@ -100,6 +100,6 @@ func (p *playState) moveFruit() {
 	p.fruit.X = int(newX)
 	p.fruit.Y = int(newY)
 
-	p.FruitLayer.Clear()
-	p.drawFruit(p.FruitLayer, p.fruit.X, p.fruit.Y)
+	p.fruitLayer.Clear()
+	p.drawFruit(p.fruitLayer, p.fruit.X, p.fruit.Y)
 }

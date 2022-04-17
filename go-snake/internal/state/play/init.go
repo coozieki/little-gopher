@@ -50,10 +50,10 @@ func (p *playState) initImages() {
 	head.DrawImage(headInner, &ebiten.DrawImageOptions{GeoM: geoM})
 	block.DrawImage(blockInner, &ebiten.DrawImageOptions{GeoM: geoM})
 
-	p.FruitImage = fruit
-	p.HeadImage = head
-	p.BlockImage = block
-	p.ObstacleImage = obstacle
+	p.fruitImage = fruit
+	p.headImage = head
+	p.blockImage = block
+	p.obstacleImage = obstacle
 }
 
 func (p *playState) initLayers() {
@@ -82,9 +82,9 @@ func (p *playState) initLayers() {
 
 	geoM := ebiten.GeoM{}
 	geoM.Translate(float64(p.fruit.X*config.BlockWidth), float64(p.fruit.Y*config.BlockWidth))
-	fruitLayer.DrawImage(p.FruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
+	fruitLayer.DrawImage(p.fruitImage, &ebiten.DrawImageOptions{GeoM: geoM})
 
-	Play.FruitLayer = fruitLayer
-	Play.SnakeLayer = snakeLayer
-	Play.MainGameLayer = mainLayer
+	Play.fruitLayer = fruitLayer
+	Play.snakeLayer = snakeLayer
+	Play.mainGameLayer = mainLayer
 }
