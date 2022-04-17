@@ -3,12 +3,11 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"go-snake/internal/game"
-	"go-snake/internal/snake"
 	"log"
 )
 
 func main() {
-	g := game.NewGame(snake.NewSnake())
+	g := game.NewGame()
 	// Specify the window size as you like. Here, a doubled size is specified.
 	ebiten.SetWindowSize(800, 800)
 	ebiten.SetWindowTitle("Snake")

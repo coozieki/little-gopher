@@ -1,13 +1,15 @@
 package snake
 
 import (
+	"errors"
 	"go-snake/internal/config"
 )
 
 type Snake interface {
-	Move()
+	Move() error
 	PushBlock()
 	GetBlocks() []Block
+	GetDir() Direction
 	ChangeDir(direction Direction)
 	GetNextHeadCoords() (x, y float64)
 	BlockExistsAt(x, y float64) bool
@@ -67,22 +69,25 @@ func (s *snake) GetBlocks() []Block {
 	return s.blocks
 }
 
-func (s *snake) Move() {
+func (s *snake) Move() error {
 	temp := s.blocks[len(s.blocks)-1]
 	temp.Direction = s.currentDir
 	temp.X, temp.Y = s.GetNextHeadCoords()
 	if s.BlockExistsAt(temp.X, temp.Y) {
-		return
+		return errors.New("")
 	}
 	firstBlock := s.blocks[0]
 	s.blocksMap[firstBlock.X][firstBlock.Y] = false
 	s.blocks = s.blocks[1:]
 	s.blocks = append(s.blocks, temp)
+
 	_, ok := s.blocksMap[temp.X]
 	if !ok {
 		s.blocksMap[temp.X] = map[float64]bool{}
 	}
 	s.blocksMap[temp.X][temp.Y] = true
+
+	return nil
 }
 
 func (s *snake) ChangeDir(direction Direction) {
@@ -136,4 +141,8 @@ func (s *snake) GetNextHeadCoords() (x float64, y float64) {
 
 func (s *snake) BlockExistsAt(x, y float64) bool {
 	return s.blocksMap[x][y]
+}
+
+func (s *snake) GetDir() Direction {
+	return s.currentDir
 }
