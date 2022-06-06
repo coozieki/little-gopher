@@ -25,9 +25,21 @@ func (m *menuLayer) render() {
 	m.image.Clear()
 	m.image.Fill(config.BGColor)
 
-	m.startButton.Render("New Game", config.ScreenWidth/2-components.ButtonWidth/2, config.ScreenHeight/2-components.ButtonHeight/2)
-	m.optionsButton.Render("Options", config.ScreenWidth/2-components.ButtonWidth/2, config.ScreenHeight/2-components.ButtonHeight/2+components.ButtonHeight+10)
-	m.exitButton.Render("Exit", config.ScreenWidth/2-components.ButtonWidth/2, config.ScreenHeight/2-components.ButtonHeight/2+(components.ButtonHeight+10)*2)
+	m.startButton.Render(
+		"New Game",
+		config.ScreenWidth/2-components.ButtonWidth/2,
+		config.ScreenHeight/2-components.ButtonHeight/2,
+	)
+	m.optionsButton.Render(
+		"Options",
+		config.ScreenWidth/2-components.ButtonWidth/2,
+		config.ScreenHeight/2-components.ButtonHeight/2+components.ButtonHeight+10,
+	)
+	m.exitButton.Render(
+		"Exit",
+		config.ScreenWidth/2-components.ButtonWidth/2,
+		config.ScreenHeight/2-components.ButtonHeight/2+(components.ButtonHeight+10)*2,
+	)
 
 	draw := func(b *components.Button) {
 		geoM := ebiten.GeoM{}
@@ -45,7 +57,7 @@ type menuState struct {
 
 var Menu *menuState
 
-func (m *menuState) Draw(screen *ebiten.Image, data *state.Data) {
+func (m *menuState) Draw(screen *ebiten.Image, _ *state.Data) {
 	screen.DrawImage(m.menuLayer.image, &ebiten.DrawImageOptions{})
 }
 
