@@ -4,37 +4,54 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"go-snake/internal/components"
 	"go-snake/internal/config"
+	"go-snake/internal/events"
 	"image/color"
 	"os"
 )
 
 func init() {
 	Menu = &menuState{}
+	Menu.EventListener = events.NewEventListener()
 
 	menuLayerImg := ebiten.NewImage(config.ScreenWidth, config.ScreenHeight)
 	menuLayerImg.Fill(color.White)
-	Menu.menuLayer = menuLayer{
-		image: menuLayerImg,
-		startButton: &components.Button{
-			Active: false,
-			Action: func(ctx interface{}) {
-				buttonCtx := ctx.(buttonContext)
-				buttonCtx.data.CurrentState = buttonCtx.data.States.Play
-			},
+
+	menuLayer := &menuLayer{image: menuLayerImg}
+
+	menuLayer.startButton = &components.Button{Parent: menuLayer}
+	Menu.Click(menuLayer.startButton, &events.ClickHandler{
+		Pressed: func(ctx events.Context) {
+			Menu.stateData.CurrentState = Menu.stateData.States.Play
 		},
-		optionsButton: &components.Button{
-			Active: false,
-			Action: func(ctx interface{}) {
-				buttonCtx := ctx.(buttonContext)
-				buttonCtx.data.CurrentState = buttonCtx.data.States.Options
-			},
+	})
+
+	menuLayer.optionsButton = &components.Button{Parent: menuLayer}
+	Menu.Click(menuLayer.optionsButton, &events.ClickHandler{
+		Pressed: func(ctx events.Context) {
+			Menu.stateData.CurrentState = Menu.stateData.States.Options
 		},
-		exitButton: &components.Button{
-			Active: false,
-			Action: func(ctx interface{}) {
-				os.Exit(1)
-			},
+	})
+
+	menuLayer.exitButton = &components.Button{Parent: menuLayer}
+	Menu.Click(menuLayer.exitButton, &events.ClickHandler{
+		Pressed: func(ctx events.Context) {
+			os.Exit(1)
 		},
+	})
+
+	Menu.menuLayer = menuLayer
+
+	buttons := []*components.Button{Menu.menuLayer.startButton, Menu.menuLayer.optionsButton, Menu.menuLayer.exitButton}
+	for _, button := range buttons {
+		Menu.Hover(button, &events.HoverHandler{})
 	}
-	Menu.menuLayer.render()
+
+	Menu.ButtonPress(&events.ButtonPressHandler{
+		Key: ebiten.KeyEnter,
+		Pressed: func(ctx events.Context) {
+			Menu.stateData.CurrentState = Menu.stateData.States.Play
+		},
+	})
+
+	Menu.menuLayer.Render()
 }

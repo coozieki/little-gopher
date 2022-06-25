@@ -2,22 +2,34 @@ package gameover
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-snake/internal/config"
+	"go-snake/internal/events"
 	"go-snake/internal/state"
 	"image/color"
 )
 
 type gameoverState struct {
+	events.EventListener
+	stateData *state.Data
 }
 
-var Gameover = &gameoverState{}
+var Gameover *gameoverState
+
+func init() {
+	Gameover = &gameoverState{EventListener: events.NewEventListener()}
+
+	Gameover.ButtonPress(&events.ButtonPressHandler{
+		Key: ebiten.KeyEscape,
+		Pressed: func(ctx events.Context) {
+			Gameover.stateData.Actions.Gameover()
+			Gameover.stateData.CurrentState = Gameover.stateData.States.Menu
+		},
+	})
+}
 
 func (p *gameoverState) Update(data *state.Data) {
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		data.Actions.Gameover()
-		data.CurrentState = data.States.Menu
-	}
+	p.stateData = data
+	p.ProcessEvents()
 }
 
 func (p *gameoverState) Draw(screen *ebiten.Image, data *state.Data) {

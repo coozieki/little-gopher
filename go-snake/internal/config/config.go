@@ -5,8 +5,6 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-const ()
-
 var (
 	BlockWidth                   = 20
 	FieldWidthInBlocks   float64 = 16

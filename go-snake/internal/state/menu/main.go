@@ -2,17 +2,11 @@ package menu
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-snake/internal/components"
 	"go-snake/internal/config"
-	"go-snake/internal/geom"
+	"go-snake/internal/events"
 	"go-snake/internal/state"
 )
-
-type buttonContext struct {
-	m    *menuState
-	data *state.Data
-}
 
 type menuLayer struct {
 	image         *ebiten.Image
@@ -21,7 +15,7 @@ type menuLayer struct {
 	exitButton    *components.Button
 }
 
-func (m *menuLayer) render() {
+func (m *menuLayer) Render() {
 	m.image.Clear()
 	m.image.Fill(config.BGColor)
 
@@ -52,7 +46,9 @@ func (m *menuLayer) render() {
 }
 
 type menuState struct {
-	menuLayer menuLayer
+	events.EventListener
+	menuLayer *menuLayer
+	stateData *state.Data
 }
 
 var Menu *menuState
@@ -62,27 +58,6 @@ func (m *menuState) Draw(screen *ebiten.Image, _ *state.Data) {
 }
 
 func (m *menuState) Update(data *state.Data) {
-	x, y := ebiten.CursorPosition()
-	if ebiten.IsKeyPressed(ebiten.KeyEnter) {
-		data.CurrentState = data.States.Play
-		return
-	}
-	buttons := []*components.Button{m.menuLayer.startButton, m.menuLayer.optionsButton, m.menuLayer.exitButton}
-	for _, b := range buttons {
-		if b.Rect.Contains(geom.Point{X: x, Y: y}) {
-			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-				b.Action(buttonContext{m: m, data: data})
-			} else {
-				b.Active = true
-				m.menuLayer.render()
-			}
-			return
-		}
-	}
-	for _, b := range buttons {
-		if b.Active {
-			b.Active = false
-			m.menuLayer.render()
-		}
-	}
+	m.stateData = data
+	m.ProcessEvents()
 }

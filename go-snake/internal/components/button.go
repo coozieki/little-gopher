@@ -3,6 +3,7 @@ package components
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
+	"go-snake/internal/events"
 	"go-snake/internal/geom"
 	"golang.org/x/image/font/basicfont"
 	"image/color"
@@ -14,10 +15,10 @@ const (
 )
 
 type Button struct {
+	rectangleShape
 	Image  *ebiten.Image
-	Rect   geom.Rect
 	Active bool
-	Action func(ctx interface{})
+	Parent Renderer
 }
 
 func (b *Button) Render(txt string, x, y int) {
@@ -40,4 +41,14 @@ func (b *Button) Render(txt string, x, y int) {
 
 	b.Image = button
 	b.Rect = buttonRect
+}
+
+func (b *Button) OnHover(_ events.Context) {
+	b.Active = true
+	b.Parent.Render()
+}
+
+func (b *Button) OnUnhover(_ events.Context) {
+	b.Active = false
+	b.Parent.Render()
 }
